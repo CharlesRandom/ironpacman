@@ -23,7 +23,7 @@ function Board(){
   }
 }
 
-function Character(){
+function Pacman(){
   this.x = 100
   this.y = 250
   this.width = 100
@@ -34,17 +34,10 @@ function Character(){
 
   this.draw = function(){
     this.x+=1
-    ctx.drawImage(this.image, this.x, this.y,this.width,this.height)
-  }
-}
-
-function Pacman(){
-  Character.call(this)
-  this.draw = function(){
     this.boundaries()
-    this.x+=1
     ctx.drawImage(this.image, this.x, this.y,this.width,this.height)
   }
+
   this.boundaries = function(){
     if(this.y+this.height > canvas.height-10){
       this.y = canvas.height - this.height
@@ -61,14 +54,44 @@ function Pacman(){
   }
 }
 
+function Ghost(x,y,dir,long){
+  this.x = x ? x : 600
+  this.y = y ? y : 450
+  this.dir = dir ? dir : 1
+  this.changeDir = 1
+  this.long = long ? long : 60
+  this.width = 100
+  this.height = 100
+  this.image = new Image()
+  this.image.src = images.pacman0
+  this.image.onload = ()=>this.draw()
+
+  this.draw = function(){
+    // ZigZag movement
+    if(Math.floor(frames/this.long) % 2 === 0){
+      this.changeDir = -1
+    }
+    else {
+      this.changeDir = 1
+    }
+    this.y -= this.changeDir * this.dir * 2
+    this.x -= 2
+    ctx.drawImage(this.image, this.x, this.y,this.width,this.height)
+  }
+} 
+
 // instances
 var bg = new Board()
 var pacman = new Pacman()
+var blinky = new Ghost(getRandomPosition(700,600),getRandomPosition(300,200),1,80)
+var pinky = new Ghost(getRandomPosition(700,600),getRandomPosition(200,100),-1,getRandomPosition(120,100))
+// var ghost3 = new Ghost(getRandomPosition(700,600),getRandomPosition(200,100),1,getRandomPosition(120,60))
+// var ghost4 = new Ghost(getRandomPosition(700,600),getRandomPosition(100,0),-1,getRandomPosition(120,30))
 
 //main functions
 function start(){
   if(!interval) interval = setInterval(update,1000/60)
-  // setInterval(update,1000/60)
+  // interval = setInterval(update,1000/60)
 }
 
 function update(){
@@ -76,6 +99,13 @@ function update(){
   ctx.clearRect(0,0,canvas.width,canvas.height)
   bg.draw()
   pacman.draw()
+  blinky.draw()
+  pinky.draw()
+}
+
+// aux functions
+function getRandomPosition(max,min){
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 //listeners
@@ -101,19 +131,19 @@ addEventListener('keydown', function(e){
     //   break;
     //ArrowUp
     case 40:
-      pacman.y += 30
+      pacman.y += 20
       break;
     //ArrowDown
     case 38:
-      pacman.y -= 30
+      pacman.y -= 20
       break;
     //ArrowLeft
     case 37:
-      pacman.x -= 30
+      pacman.x -= 20
       break;
     //ArrowRight
     case 39:
-      pacman.x += 30
+      pacman.x += 20
       break;
   }
 })
