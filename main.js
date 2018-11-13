@@ -78,13 +78,29 @@ function Ghost(x,y,dir,long){
     this.x -= 2
     ctx.drawImage(this.image, this.x, this.y,this.width,this.height)
   }
-} 
+}
+
+function Obstacle(x,y,width,height){
+  this.x = x ? x : 300
+  this.y = y ? y : 100
+  this.width = width ? width : 250
+  this.height = height ? height : 60
+
+  this.draw = function(){
+    ctx.strokeStyle = "blue"
+    ctx.lineWidth = 10
+    ctx.strokeRect(this.x,this.y,this.width,this.height)
+  }
+}
 
 // instances
 var bg = new Board()
+var bar1 = new Obstacle(400,100,250,60) //Horizontal Top
+var bar2 = new Obstacle(100,400,250,60) //Horizontal Bottom
+var bar3 = new Obstacle(500,250,60,250) //Vertical
 var pacman = new Pacman()
-var blinky = new Ghost(getRandomPosition(700,600),getRandomPosition(300,200),1,80)
-var pinky = new Ghost(getRandomPosition(700,600),getRandomPosition(200,100),-1,getRandomPosition(120,100))
+var blinky = new Ghost(700,getRandomPosition(300,200),1,30)
+var pinky = new Ghost(700,getRandomPosition(200,100),-1,getRandomPosition(120,60))
 // var ghost3 = new Ghost(getRandomPosition(700,600),getRandomPosition(200,100),1,getRandomPosition(120,60))
 // var ghost4 = new Ghost(getRandomPosition(700,600),getRandomPosition(100,0),-1,getRandomPosition(120,30))
 
@@ -101,6 +117,9 @@ function update(){
   pacman.draw()
   blinky.draw()
   pinky.draw()
+  bar1.draw()
+  bar2.draw()
+  bar3.draw()
 }
 
 // aux functions
