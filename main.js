@@ -19,6 +19,7 @@ function Board(){
   this.height = canvas.height
 
   this.draw = function(){
+    ctx.fillStyle = "black"
     ctx.fillRect(0,0,canvas.width,canvas.height)
   }
 }
@@ -93,11 +94,24 @@ function Obstacle(x,y,width,height){
   }
 }
 
+function Pellet(x,y){
+  this.x = x ? x : 450
+  this.y = y ? y : 50
+  this.width = 10
+  this.height = 10
+
+  this.draw = function(){
+    ctx.fillStyle = "white"
+    ctx.fillRect(this.x,this.y,this.width,this.height)
+  }
+}
+
 // instances
 var bg = new Board()
-var bar1 = new Obstacle(400,100,250,60) //Horizontal Top
+var bar1 = new Obstacle(400,100,300,60) //Horizontal Top
 var bar2 = new Obstacle(100,400,250,60) //Horizontal Bottom
 var bar3 = new Obstacle(500,250,60,250) //Vertical
+var pellet1 = new Pellet()
 var pacman = new Pacman()
 var blinky = new Ghost(700,getRandomPosition(300,200),1,30)
 var pinky = new Ghost(700,getRandomPosition(200,100),-1,getRandomPosition(120,60))
@@ -120,6 +134,7 @@ function update(){
   bar1.draw()
   bar2.draw()
   bar3.draw()
+  pellet1.draw()
 }
 
 // aux functions
