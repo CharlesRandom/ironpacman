@@ -14,6 +14,8 @@ var images = {
   inky: "images/inky.png",
   pinky: "images/pinky.png",
   clyde: "images/clyde.png",
+  obstacle_hor: "images/obstacle_hor.png",
+  obstacle_ver: "images/obstacle_ver.png",
   ironhack: "images/ironhack.png"
 }
 
@@ -102,7 +104,7 @@ function Obstacle(x,y,width,height){
 
   this.draw = function(){
     ctx.strokeStyle = "blue"
-    ctx.lineWidth = 10
+    ctx.lineWidth = 5
     ctx.strokeRect(this.x,this.y,this.width,this.height)
   }
 }
@@ -123,10 +125,12 @@ function Pellet(x,y,img){
 
 // instances
 var bg = new Board()
-var bar1 = new Obstacle(400,100,300,60) //Horizontal Top
-var bar2 = new Obstacle(100,400,250,60) //Horizontal Bottom
-var bar3 = new Obstacle(500,250,60,250) //Vertical
-var pellet1 = new Pellet()
+var bar1 = new Obstacle(400,100,300,30) //Horizontal Top
+var bar2 = new Obstacle(100,400,250,30) //Horizontal Bottom
+var bar3 = new Obstacle(500,250,30,300) //Vertical
+var pellet1 = new Pellet(450,50,images.ironhack)
+var pellet2 = new Pellet(550,300,images.ironhack)
+var pellet3 = new Pellet(200,450,images.ironhack)
 var pacman = new Pacman()
 var blinky = new Ghost(700,100,images.blinky,1,60)
 var inky = new Ghost(600,200,images.inky,-1,80)
@@ -138,6 +142,14 @@ var clyde = new Ghost(600,400,images.clyde,-1,80)
 function start(){
   if(!interval) interval = setInterval(update,1000/60)
   // interval = setInterval(update,1000/60)
+}
+
+// aux functions 
+function checkCollision(){
+  if(pacman.x + pacman.width > bar3.x &&
+    pacman.y > bar3.y && pacman.y < bar3.y + bar3.height &&
+    pacman.y > bar3.y && pacman.y + pacman.height < bar3.y + bar3.height)
+    pacman.x = bar3.x - 30
 }
 
 function update(){
@@ -153,6 +165,9 @@ function update(){
   bar2.draw()
   bar3.draw()
   pellet1.draw()
+  pellet2.draw()
+  pellet3.draw()
+  // checkCollision()
 }
 
 // aux functions
@@ -196,6 +211,7 @@ addEventListener('keydown', function(e){
     //ArrowRight
     case 39:
       pacman.x += speed
+      // checkCollision()
       break;
   }
 })
