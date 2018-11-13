@@ -5,10 +5,16 @@ var ctx = canvas.getContext('2d')
 // variables
 var interval = null
 var frames = 0
+var speed = 35
 var images = {
   pacman0: "images/Pacman/sprite_pacman0.png",
   pacman1: "images/Pacman/sprite_pacman1.png",
-  pacman2: "images/Pacman/sprite_pacman2.png"
+  pacman2: "images/Pacman/sprite_pacman2.png",
+  blinky: "images/blinky.png",
+  inky: "images/inky.png",
+  pinky: "images/pinky.png",
+  clyde: "images/clyde.png",
+  ironhack: "images/ironhack.png"
 }
 
 // classes
@@ -55,16 +61,17 @@ function Pacman(){
   }
 }
 
-function Ghost(x,y,dir,long){
+function Ghost(x,y,img,dir,long){
   this.x = x ? x : 600
   this.y = y ? y : 450
   this.dir = dir ? dir : 1
   this.changeDir = 1
+  this.goBackwards = 1
   this.long = long ? long : 60
   this.width = 100
   this.height = 100
   this.image = new Image()
-  this.image.src = images.pacman0
+  this.image.src = img ? img : images.pacman0
   this.image.onload = ()=>this.draw()
 
   this.draw = function(){
@@ -75,8 +82,14 @@ function Ghost(x,y,dir,long){
     else {
       this.changeDir = 1
     }
-    this.y -= this.changeDir * this.dir * 2
-    this.x -= 2
+    if(this.x < 10){
+      this.goBackwards = -1
+    }
+    if(this.x + this.width > canvas.width-10){
+      this.goBackwards = 1
+    }
+    this.y -= this.changeDir * this.dir * 3
+    this.x -= this.goBackwards * 3
     ctx.drawImage(this.image, this.x, this.y,this.width,this.height)
   }
 }
@@ -94,15 +107,17 @@ function Obstacle(x,y,width,height){
   }
 }
 
-function Pellet(x,y){
+function Pellet(x,y,img){
   this.x = x ? x : 450
   this.y = y ? y : 50
-  this.width = 10
-  this.height = 10
+  this.width = 20
+  this.height = 20
+  this.image = new Image()
+  this.image.src = img ? img : images.ironhack
+  this.image.onload = ()=>this.draw()
 
   this.draw = function(){
-    ctx.fillStyle = "white"
-    ctx.fillRect(this.x,this.y,this.width,this.height)
+    ctx.drawImage(this.image, this.x, this.y,this.width,this.height)
   }
 }
 
@@ -113,10 +128,11 @@ var bar2 = new Obstacle(100,400,250,60) //Horizontal Bottom
 var bar3 = new Obstacle(500,250,60,250) //Vertical
 var pellet1 = new Pellet()
 var pacman = new Pacman()
-var blinky = new Ghost(700,getRandomPosition(300,200),1,30)
-var pinky = new Ghost(700,getRandomPosition(200,100),-1,getRandomPosition(120,60))
-// var ghost3 = new Ghost(getRandomPosition(700,600),getRandomPosition(200,100),1,getRandomPosition(120,60))
-// var ghost4 = new Ghost(getRandomPosition(700,600),getRandomPosition(100,0),-1,getRandomPosition(120,30))
+var blinky = new Ghost(700,100,images.blinky,1,60)
+var inky = new Ghost(600,200,images.inky,-1,80)
+var pinky = new Ghost(700,300,images.pinky,1,60)
+var clyde = new Ghost(600,400,images.clyde,-1,80)
+
 
 //main functions
 function start(){
@@ -130,7 +146,9 @@ function update(){
   bg.draw()
   pacman.draw()
   blinky.draw()
+  inky.draw()
   pinky.draw()
+  clyde.draw()
   bar1.draw()
   bar2.draw()
   bar3.draw()
@@ -165,19 +183,19 @@ addEventListener('keydown', function(e){
     //   break;
     //ArrowUp
     case 40:
-      pacman.y += 20
+      pacman.y += speed
       break;
     //ArrowDown
     case 38:
-      pacman.y -= 20
+      pacman.y -= speed
       break;
     //ArrowLeft
     case 37:
-      pacman.x -= 20
+      pacman.x -= speed
       break;
     //ArrowRight
     case 39:
-      pacman.x += 20
+      pacman.x += speed
       break;
   }
 })
