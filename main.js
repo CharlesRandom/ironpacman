@@ -5,7 +5,7 @@ var ctx = canvas.getContext('2d')
 // variables
 var interval = null
 var frames = 0
-var speed = 20
+var speed = 25
 var charSize = 30
 var images = {
   pacman0: "images/Pacman/sprite_pacman0.png",
@@ -121,6 +121,7 @@ function Pellet(x,y,img){
   this.image = new Image()
   this.image.src = img ? img : images.ironhack
   this.image.onload = ()=>this.draw()
+  this.active = true
 
   this.draw = function(){
     ctx.drawImage(this.image, this.x, this.y,this.width,this.height)
@@ -152,22 +153,35 @@ function start(){
 // type:
 // 1: Horizontal
 // 2. Vertical
+// 3. Sticker/Pellet
 function checkCollision(item,type){
   if (pacman.x < item.x + item.width  && pacman.x + pacman.width  > item.x &&
     pacman.y < item.y + item.height && pacman.y + pacman.height > item.y) {
     // The objects are touching
     // console.log("touching")
-    // Which side?
-    if(pacman.x < item.x){
-      pacman.x = pacman.x - charSize
-    } else  if(pacman.x < item.x + item.width){
-      pacman.x = pacman.x + charSize
+    // Which element? Which side?
+    if(type === 4){
+      // Eliminar y sumar score
+      gameOver()
     }
-    if(type === 1 && pacman.y < item.y){
-      pacman.y = pacman.y - charSize
-    }
-    if(type === 1 && pacman.y > item.y){
-      pacman.y = pacman.y + charSize
+    if(type === 3){
+      // Eliminar y sumar score
+      item.active = false
+      item.x = canvas.width
+      item.y = canvas.height
+      console.log("Sticker!")
+    } else {
+      if(pacman.x < item.x){
+        pacman.x = pacman.x - charSize
+      } else  if(pacman.x < item.x + item.width){
+        pacman.x = pacman.x + charSize
+      }
+      if(type === 1 && pacman.y < item.y){
+        pacman.y = pacman.y - charSize
+      }
+      if(type === 1 && pacman.y > item.y){
+        pacman.y = pacman.y + charSize
+      }
     }
   }
 }
@@ -184,12 +198,31 @@ function update(){
   bar1.draw()
   bar2.draw()
   bar3.draw()
-  pellet1.draw()
-  pellet2.draw()
-  pellet3.draw()
+  if(pellet1.active) pellet1.draw()
+  if(pellet2.active) pellet2.draw()
+  if(pellet3.active) pellet3.draw()
   checkCollision(bar1,1)
   checkCollision(bar2,1)
   checkCollision(bar3,2)
+  checkCollision(pellet1,3)
+  checkCollision(pellet2,3)
+  checkCollision(pellet3,3)
+  checkCollision(blinky,4)
+  checkCollision(inky,4)
+  checkCollision(pinky,4)
+  checkCollision(clyde,4)
+}
+
+function gameOver(){
+  clearInterval(interval)
+  interval = null
+  ctx.fillStyle = "red"
+  ctx.font = "bold 80px Arial"
+  ctx.fillText("GAME OVER",50,200)
+  ctx.fillStyle = "white"
+  ctx.font = "bold 40px Arial"
+  ctx.fillText("Score: " + Math.floor(frames/60),200,300)
+  ctx.fillText("Press 'enter' to restart",50,350)
 }
 
 // aux functions
