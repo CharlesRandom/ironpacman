@@ -114,9 +114,13 @@ function Obstacle(x,y,width,height){
   this.height = height ? height : 60
 
   this.draw = function(){
-    ctx.strokeStyle = "blue"
-    ctx.lineWidth = 5
-    ctx.strokeRect(this.x,this.y,this.width,this.height)
+    // ctx.strokeStyle = "blue"
+    // ctx.lineWidth = 5
+    // ctx.strokeRect(this.x,this.y,this.width,this.height)
+    ctx.fillStyle = "blue"
+    ctx.fillRect(this.x,this.y,this.width,this.height)
+    ctx.fillStyle = "black"
+    ctx.fillRect(this.x+5,this.y+5,this.width-10,this.height-10)
   }
 }
 
@@ -187,30 +191,31 @@ function update(){
 }
 
 function gameOver(){
+  // score += timeLimit - Math.floor(frames/60)
   clearInterval(interval)
   interval = null
   ctx.fillStyle = "red"
   ctx.font = "bold 80px Arial"
-  ctx.fillText("GAME OVER",50,200)
+  ctx.fillText("GAME OVER",50,220)
   ctx.fillStyle = "white"
   ctx.font = "bold 40px Arial"
-  ctx.fillText("Score: " + score + " t: " + Math.floor(frames/60),200,300)
-  ctx.fillText("Press 'enter' to restart",50,350)
+  ctx.fillText("Score: " + score + " pts   Time: " + Math.floor(frames/60) + " sec",150,360)
+  ctx.fillText("Press 'enter' to restart",50,500)
 }
 
 function levelComplete(level){
-  if(pellet1.active) pellet1.draw()
-  if(pellet2.active) pellet2.draw()
-  if(pellet3.active) pellet3.draw()
+  pellet1.draw()
+  pellet2.draw()
+  pellet3.draw()
   score += timeLimit - Math.floor(frames/60)
   clearInterval(interval)
   interval = null
   ctx.fillStyle = "yellow"
   ctx.font = "bold 80px Arial"
-  ctx.fillText("Level " + level + " Complete!",50,200)
+  ctx.fillText("Level " + level + " Complete!",50,220)
   ctx.fillStyle = "white"
   ctx.font = "bold 40px Arial"
-  ctx.fillText("Score: " + score + " t: " + Math.floor(frames/60),200,300)
+  ctx.fillText("Score: " + score + " pts   Time: " + Math.floor(frames/60) + " sec",150,360)
   // ctx.fillText("Press 'enter' to restart",50,350)
 }
 
@@ -235,10 +240,10 @@ function checkCollision(item,type){
     }
     if(type === 3){
       // Eliminar y sumar score
-      item.active = false
       item.x = canvas.width
       item.y = canvas.height
       item.draw()
+      item.active = false
       score += item.points
       stickers--
       console.log("Sticker!")
@@ -278,7 +283,11 @@ function levelSettings(level){
       pellet2.y = 300
       pellet3.x = 200
       pellet3.y = 450
+      pellet1.active = true
+      pellet2.active = true
+      pellet3.active = true
       stickers = 3
+      score = 0
       blinky.x = 700
       inky.x = 600
       pinky.x = 700
