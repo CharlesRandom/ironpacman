@@ -7,6 +7,11 @@ var interval = null
 var frames = 0
 var speed = 25
 var charSize = 30
+var player = 1
+var level = 1
+var score = 0
+var stickers = 3
+var timeLimit = 60
 var images = {
   pacman0: "images/Pacman/sprite_pacman0.png",
   pacman1: "images/Pacman/sprite_pacman1.png",
@@ -34,8 +39,8 @@ function Board(){
 }
 
 function Pacman(){
-  this.x = 210
-  this.y = 250
+  this.x = 200
+  this.y = canvas.height/2 - charSize
   this.width = charSize
   this.height = charSize
   this.image = new Image()
@@ -43,7 +48,7 @@ function Pacman(){
   this.image.onload = ()=>this.draw()
 
   this.draw = function(){
-    // this.x+=1
+    this.x+=1
     this.boundaries()
     ctx.fillStyle = "yellow"
     ctx.fillRect(this.x,this.y,this.width,this.height)
@@ -65,7 +70,7 @@ function Pacman(){
   }
 }
 
-function Ghost(x,y,img,dir,long,color){
+function Ghost(x,y,img,dir,long,color,speed){
   this.x = x ? x : 600
   this.y = y ? y : 450
   this.dir = dir ? dir : 1
@@ -75,6 +80,7 @@ function Ghost(x,y,img,dir,long,color){
   this.width = charSize
   this.height = charSize
   this.color = color
+  this.speed = speed ? speed : 3
   this.image = new Image()
   this.image.src = img ? img : images.pacman0
   this.image.onload = ()=>this.draw()
@@ -87,14 +93,15 @@ function Ghost(x,y,img,dir,long,color){
     else {
       this.changeDir = 1
     }
+    // Return when reach canvas limit
     if(this.x < 10){
       this.goBackwards = -1
     }
     if(this.x + this.width > canvas.width-10){
       this.goBackwards = 1
     }
-    this.y -= this.changeDir * this.dir * 3
-    this.x -= this.goBackwards * 3
+    this.y -= this.changeDir * this.dir * this.speed
+    this.x -= this.goBackwards * this.speed
     ctx.fillStyle = this.color
     ctx.fillRect(this.x,this.y,this.width,this.height)
   }
@@ -122,6 +129,7 @@ function Pellet(x,y,img){
   this.image.src = img ? img : images.ironhack
   this.image.onload = ()=>this.draw()
   this.active = true
+  this.points = 30
 
   this.draw = function(){
     ctx.drawImage(this.image, this.x, this.y,this.width,this.height)
@@ -130,60 +138,24 @@ function Pellet(x,y,img){
 
 // instances
 var bg = new Board()
-var bar1 = new Obstacle(400,100,300,charSize) //Horizontal Top
-var bar2 = new Obstacle(100,400,250,charSize) //Horizontal Bottom
-var bar3 = new Obstacle(500,250,charSize,300) //Vertical
-var pellet1 = new Pellet(450,50,images.ironhack)
-var pellet2 = new Pellet(550,300,images.ironhack)
-var pellet3 = new Pellet(200,450,images.ironhack)
+var bar1 = new Obstacle(canvas.width,canvas.height,300,charSize) //Horizontal Top
+var bar2 = new Obstacle(canvas.width,canvas.height,250,charSize) //Horizontal Bottom
+var bar3 = new Obstacle(canvas.width,canvas.height,charSize,300) //Vertical
+var pellet1 = new Pellet(canvas.width,canvas.height,images.ironhack)
+var pellet2 = new Pellet(canvas.width,canvas.height,images.ironhack)
+var pellet3 = new Pellet(canvas.width,canvas.height,images.ironhack)
 var pacman = new Pacman()
 var blinky = new Ghost(700,100,images.blinky,1,60,"#d03e19")
-var inky = new Ghost(600,200,images.inky,-1,80,"#46bfee")
+var inky = new Ghost(700,200,images.inky,-1,120,"#46bfee")
 var pinky = new Ghost(700,300,images.pinky,1,60,"#ea82e5")
-var clyde = new Ghost(600,400,images.clyde,-1,80,"#db851c")
+var clyde = new Ghost(700,400,images.clyde,-1,120,"#db851c")
 
 
 //main functions
 function start(){
+  levelSettings(level)
   if(!interval) interval = setInterval(update,1000/60)
   // interval = setInterval(update,1000/60)
-}
-
-// aux functions 
-// type:
-// 1: Horizontal
-// 2. Vertical
-// 3. Sticker/Pellet
-function checkCollision(item,type){
-  if (pacman.x < item.x + item.width  && pacman.x + pacman.width  > item.x &&
-    pacman.y < item.y + item.height && pacman.y + pacman.height > item.y) {
-    // The objects are touching
-    // console.log("touching")
-    // Which element? Which side?
-    if(type === 4){
-      // Eliminar y sumar score
-      gameOver()
-    }
-    if(type === 3){
-      // Eliminar y sumar score
-      item.active = false
-      item.x = canvas.width
-      item.y = canvas.height
-      console.log("Sticker!")
-    } else {
-      if(pacman.x < item.x){
-        pacman.x = pacman.x - charSize
-      } else  if(pacman.x < item.x + item.width){
-        pacman.x = pacman.x + charSize
-      }
-      if(type === 1 && pacman.y < item.y){
-        pacman.y = pacman.y - charSize
-      }
-      if(type === 1 && pacman.y > item.y){
-        pacman.y = pacman.y + charSize
-      }
-    }
-  }
 }
 
 function update(){
@@ -211,6 +183,7 @@ function update(){
   checkCollision(inky,4)
   checkCollision(pinky,4)
   checkCollision(clyde,4)
+  if(checkLevelComplete()) levelComplete(level)
 }
 
 function gameOver(){
@@ -221,13 +194,102 @@ function gameOver(){
   ctx.fillText("GAME OVER",50,200)
   ctx.fillStyle = "white"
   ctx.font = "bold 40px Arial"
-  ctx.fillText("Score: " + Math.floor(frames/60),200,300)
+  ctx.fillText("Score: " + score + " t: " + Math.floor(frames/60),200,300)
   ctx.fillText("Press 'enter' to restart",50,350)
+}
+
+function levelComplete(level){
+  if(pellet1.active) pellet1.draw()
+  if(pellet2.active) pellet2.draw()
+  if(pellet3.active) pellet3.draw()
+  score += timeLimit - Math.floor(frames/60)
+  clearInterval(interval)
+  interval = null
+  ctx.fillStyle = "yellow"
+  ctx.font = "bold 80px Arial"
+  ctx.fillText("Level " + level + " Complete!",50,200)
+  ctx.fillStyle = "white"
+  ctx.font = "bold 40px Arial"
+  ctx.fillText("Score: " + score + " t: " + Math.floor(frames/60),200,300)
+  // ctx.fillText("Press 'enter' to restart",50,350)
 }
 
 // aux functions
 function getRandomPosition(max,min){
   return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// type:
+// 1: Horizontal
+// 2. Vertical
+// 3. Sticker/Pellet
+function checkCollision(item,type){
+  if (pacman.x < item.x + item.width  && pacman.x + pacman.width  > item.x &&
+    pacman.y < item.y + item.height && pacman.y + pacman.height > item.y) {
+    // The objects are touching
+    // console.log("touching")
+    // Which element? Which side?
+    if(type === 4){
+      // Calculate Score. If player 1, set game for player 2
+      gameOver()
+    }
+    if(type === 3){
+      // Eliminar y sumar score
+      item.active = false
+      item.x = canvas.width
+      item.y = canvas.height
+      item.draw()
+      score += item.points
+      stickers--
+      console.log("Sticker!")
+    } else {
+      if(pacman.x < item.x){
+        pacman.x = pacman.x - charSize
+      } else  if(pacman.x < item.x + item.width){
+        pacman.x = pacman.x + charSize
+      }
+      if(type === 1 && pacman.y < item.y){
+        pacman.y = pacman.y - charSize
+      }
+      if(type === 1 && pacman.y > item.y){
+        pacman.y = pacman.y + charSize
+      }
+    }
+  }
+}
+
+function checkLevelComplete(){
+  return stickers === 0
+}
+
+function levelSettings(level){
+  switch(level){
+    case 1:
+      // start()
+      bar1.x = 400
+      bar1.y = 100
+      bar2.x = 100
+      bar2.y = 400
+      bar3.x = 500
+      bar3.y = 250
+      pellet1.x = 450
+      pellet1.y = 50
+      pellet2.x = 550
+      pellet2.y = 300
+      pellet3.x = 200
+      pellet3.y = 450
+      stickers = 3
+      blinky.x = 700
+      inky.x = 600
+      pinky.x = 700
+      clyde.x = 600
+      pacman.x = 200
+      pacman.y = canvas.height/2 - charSize
+      break;
+    default:
+      start()
+      break;
+  }
 }
 
 //listeners
