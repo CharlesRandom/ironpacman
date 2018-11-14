@@ -5,7 +5,8 @@ var ctx = canvas.getContext('2d')
 // variables
 var interval = null
 var frames = 0
-var speed = 35
+var speed = 20
+var charSize = 30
 var images = {
   pacman0: "images/Pacman/sprite_pacman0.png",
   pacman1: "images/Pacman/sprite_pacman1.png",
@@ -33,23 +34,24 @@ function Board(){
 }
 
 function Pacman(){
-  this.x = 100
+  this.x = 210
   this.y = 250
-  this.width = 100
-  this.height = 100
+  this.width = charSize
+  this.height = charSize
   this.image = new Image()
   this.image.src = images.pacman1
   this.image.onload = ()=>this.draw()
 
   this.draw = function(){
-    this.x+=1
+    // this.x+=1
     this.boundaries()
-    ctx.drawImage(this.image, this.x, this.y,this.width,this.height)
+    ctx.fillStyle = "yellow"
+    ctx.fillRect(this.x,this.y,this.width,this.height)
   }
 
   this.boundaries = function(){
     if(this.y+this.height > canvas.height-10){
-      this.y = canvas.height - this.height
+      this.y = canvas.height - this.height -10
     } 
     if(this.y < 10){
       this.y = 10
@@ -58,20 +60,21 @@ function Pacman(){
       this.x = 10
     }
     if(this.x + this.width > canvas.width-10){
-      this.x = canvas.width - this.width
+      this.x = canvas.width - this.width - 10
     }
   }
 }
 
-function Ghost(x,y,img,dir,long){
+function Ghost(x,y,img,dir,long,color){
   this.x = x ? x : 600
   this.y = y ? y : 450
   this.dir = dir ? dir : 1
   this.changeDir = 1
   this.goBackwards = 1
   this.long = long ? long : 60
-  this.width = 100
-  this.height = 100
+  this.width = charSize
+  this.height = charSize
+  this.color = color
   this.image = new Image()
   this.image.src = img ? img : images.pacman0
   this.image.onload = ()=>this.draw()
@@ -92,7 +95,8 @@ function Ghost(x,y,img,dir,long){
     }
     this.y -= this.changeDir * this.dir * 3
     this.x -= this.goBackwards * 3
-    ctx.drawImage(this.image, this.x, this.y,this.width,this.height)
+    ctx.fillStyle = this.color
+    ctx.fillRect(this.x,this.y,this.width,this.height)
   }
 }
 
@@ -125,17 +129,17 @@ function Pellet(x,y,img){
 
 // instances
 var bg = new Board()
-var bar1 = new Obstacle(400,100,300,30) //Horizontal Top
-var bar2 = new Obstacle(100,400,250,30) //Horizontal Bottom
-var bar3 = new Obstacle(500,250,30,300) //Vertical
+var bar1 = new Obstacle(400,100,300,charSize) //Horizontal Top
+var bar2 = new Obstacle(100,400,250,charSize) //Horizontal Bottom
+var bar3 = new Obstacle(500,250,charSize,300) //Vertical
 var pellet1 = new Pellet(450,50,images.ironhack)
 var pellet2 = new Pellet(550,300,images.ironhack)
 var pellet3 = new Pellet(200,450,images.ironhack)
 var pacman = new Pacman()
-var blinky = new Ghost(700,100,images.blinky,1,60)
-var inky = new Ghost(600,200,images.inky,-1,80)
-var pinky = new Ghost(700,300,images.pinky,1,60)
-var clyde = new Ghost(600,400,images.clyde,-1,80)
+var blinky = new Ghost(700,100,images.blinky,1,60,"#d03e19")
+var inky = new Ghost(600,200,images.inky,-1,80,"#46bfee")
+var pinky = new Ghost(700,300,images.pinky,1,60,"#ea82e5")
+var clyde = new Ghost(600,400,images.clyde,-1,80,"#db851c")
 
 
 //main functions
@@ -145,11 +149,27 @@ function start(){
 }
 
 // aux functions 
-function checkCollision(){
-  if(pacman.x + pacman.width > bar3.x &&
-    pacman.y > bar3.y && pacman.y < bar3.y + bar3.height &&
-    pacman.y > bar3.y && pacman.y + pacman.height < bar3.y + bar3.height)
-    pacman.x = bar3.x - 30
+// type:
+// 1: Horizontal
+// 2. Vertical
+function checkCollision(item,type){
+  if (pacman.x < item.x + item.width  && pacman.x + pacman.width  > item.x &&
+    pacman.y < item.y + item.height && pacman.y + pacman.height > item.y) {
+    // The objects are touching
+    // console.log("touching")
+    // Which side?
+    if(pacman.x < item.x){
+      pacman.x = pacman.x - charSize
+    } else  if(pacman.x < item.x + item.width){
+      pacman.x = pacman.x + charSize
+    }
+    if(type === 1 && pacman.y < item.y){
+      pacman.y = pacman.y - charSize
+    }
+    if(type === 1 && pacman.y > item.y){
+      pacman.y = pacman.y + charSize
+    }
+  }
 }
 
 function update(){
@@ -167,7 +187,9 @@ function update(){
   pellet1.draw()
   pellet2.draw()
   pellet3.draw()
-  // checkCollision()
+  checkCollision(bar1,1)
+  checkCollision(bar2,1)
+  checkCollision(bar3,2)
 }
 
 // aux functions
