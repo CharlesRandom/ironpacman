@@ -2,6 +2,9 @@
 var canvas = document.getElementById("canvas")
 var ctx = canvas.getContext('2d')
 
+//DOM Manipulation
+var header = document.getElementById("h1")
+
 // variables
 var interval = null
 var frames = 0
@@ -53,6 +56,12 @@ function Board(){
   this.draw = function(){
     ctx.fillStyle = "black"
     ctx.fillRect(0,0,canvas.width,canvas.height)
+  }
+  this.drawScore = function(){
+    ctx.fillStyle = "white"
+    ctx.font = "bold 24px Avenir"
+    // ctx.fillText("Score: " + Math.floor(frames/60),50,50)
+    ctx.fillText("Score: " + score + " pts   Time: " + Math.floor(frames/60) + " sec",50,50)
   }
 }
 
@@ -213,6 +222,7 @@ var clyde = new Ghost(700,400,images.clyde2,images.clyde1,-1,120,"#db851c")
 
 //main functions
 function start(){
+  h1.innerHTML = "Player " + player
   levelSettings(level)
   if(!interval) interval = setInterval(update,1000/60)
   // interval = setInterval(update,1000/60)
@@ -222,6 +232,7 @@ function update(){
   frames++
   ctx.clearRect(0,0,canvas.width,canvas.height)
   bg.draw()
+  bg.drawScore()
   pacman.draw()
   bar1.draw()
   bar2.draw()
