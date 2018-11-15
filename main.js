@@ -11,7 +11,7 @@ var frames = 0
 var speed = 25
 var charSize = 35
 var player = 1
-var countdown = 5
+var countdown = 3
 var level = 1
 var score = 0
 var gameStart = false
@@ -46,6 +46,12 @@ var images = {
   menu: "images/pacman_menu.png"
 }
 
+var audio = {
+  start:"audio/PacManOriginalTheme.mp3",
+  play: "http://66.90.93.122/ost/mario-kart-64/qljrieoz/13%20Rainbow%20Road.mp3",
+  gameOver: "http://66.90.93.122/ost/super-mario-kart-gamerip/khkvobtw/Game%20Over.mp3"
+}
+
 // classes
 function Board(){
   this.x = 0
@@ -76,6 +82,16 @@ function Menu(){
 
   this.draw = function(){
     ctx.drawImage(this.image, this.x, this.y,this.width,this.height)
+    ctx.fillStyle = "yellow"
+    ctx.font = "bold 30px Avenir"
+    ctx.fillText("Instructions:",50,280)
+    ctx.font = "bold 24px Avenir"
+    ctx.fillText("1. After you press enter, you'll have a few seconds to get ready",50,330)
+    ctx.fillText("2. Use the arrow keys to move around",50,365)
+    ctx.fillText("3. There's a force pushing you to the right, be stronger!",50,400)
+    ctx.fillText("4. If you hit the obstacles, you'll bounce back",50,440)
+    ctx.fillText("5. Level's completed once you got all the stickers",50,475)
+    ctx.fillText("6. If a ghost hits you, you're dead D:",50,510)
   }
 }
 
@@ -206,6 +222,7 @@ function Pellet(x,y,img){
 
 // instances
 var bg = new Board()
+var bgSound
 var menu = new Menu()
 var bar1 = new Obstacle(canvas.width,canvas.height,300,charSize) //Horizontal Top
 var bar2 = new Obstacle(canvas.width,canvas.height,250,charSize) //Horizontal Bottom
@@ -224,6 +241,9 @@ var clyde = new Ghost(700,400,images.clyde2,images.clyde1,-1,120,"#db851c")
 function start(){
   h1.innerHTML = "Player " + player
   levelSettings(level)
+  bgSound = new Audio()
+  bgSound.src = audio.start
+  bgSound.play()
   if(!interval) interval = setInterval(update,1000/60)
   // interval = setInterval(update,1000/60)
 }
@@ -254,11 +274,15 @@ function update(){
   checkCollision(inky,4)
   checkCollision(pinky,4)
   checkCollision(clyde,4)
-  if(checkLevelComplete()) levelComplete(level)
+  if(checkLevelComplete()) {
+    score += timeLimit - Math.floor(frames/60)
+    setTimeout(levelComplete,200)
+  }
 }
 
 function gameOver(){
   // score += timeLimit - Math.floor(frames/60)
+  bgSound.pause()
   gameStart = false
   clearInterval(interval)
   interval = null
@@ -269,29 +293,26 @@ function gameOver(){
   ctx.fillText("GAME OVER",50,220)
   ctx.fillStyle = "white"
   ctx.font = "bold 40px Arial"
-  ctx.fillText("Score: " + score + " pts   Time: " + Math.floor(frames/60) + " sec",150,360)
-  ctx.fillText("Press 'enter' to restart",50,500)
+  ctx.fillText("Final Score: " + score + " pts   Time: " + Math.floor(frames/60) + " sec",120,360)
   if(player === 1){
+    ctx.fillText("Next player get ready",50,500)
     player = 2
-    setTimeout(nextPlayer,5000)
+    setTimeout(nextPlayer,3000)
   } else {
     player = 1
+    ctx.fillText("Press 'enter' to restart",50,500)
   }
 }
 
-function levelComplete(level){
-  pellet1.draw()
-  pellet2.draw()
-  pellet3.draw()
-  score += timeLimit - Math.floor(frames/60)
+function levelComplete(){
   clearInterval(interval)
   interval = null
   ctx.fillStyle = "yellow"
   ctx.font = "bold 80px Arial"
-  ctx.fillText("Level " + level + " Complete!",50,220)
+  ctx.fillText("Level " + level + " Completed!",50,220)
   ctx.fillStyle = "white"
   ctx.font = "bold 40px Arial"
-  ctx.fillText("Score: " + score + " pts   Time: " + Math.floor(frames/60) + " sec",150,360)
+  ctx.fillText("Final Score: " + score + " pts   Time: " + Math.floor(frames/60) + " sec",120,360)
   // ctx.fillText("Press 'enter' to restart",50,350)
 }
 
@@ -318,8 +339,8 @@ function checkCollision(item,type){
       // Eliminar y sumar score
       item.x = canvas.width
       item.y = canvas.height
-      item.draw()
       pacman.draw()
+      item.draw()
       item.active = false
       score += item.points
       stickers--
@@ -387,9 +408,9 @@ function levelSettings(level){
 }
 
 function nextPlayer(){
+  h1.innerHTML = "Player " + player
   clearInterval(interval)
   interval = null
-
   interval = setInterval(function(){
     ctx.fillStyle = "black"
     ctx.fillRect(0,0,canvas.width,canvas.height)
@@ -402,8 +423,8 @@ function nextPlayer(){
     if(countdown === 0){
       clearInterval(interval)
       interval = null
-      countdown = 5
-      setTimeout(start,1000)
+      countdown = 3
+      setTimeout(start,500)
     }
   },1000)
   // setTimeout(start,5000)
