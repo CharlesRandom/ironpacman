@@ -6,23 +6,40 @@ var ctx = canvas.getContext('2d')
 var interval = null
 var frames = 0
 var speed = 25
-var charSize = 30
+var charSize = 35
 var player = 1
 var level = 1
 var score = 0
+var gameStart = false
 var stickers = 3
 var timeLimit = 60
 var images = {
-  pacman0: "images/Pacman/sprite_pacman0.png",
-  pacman1: "images/Pacman/sprite_pacman1.png",
-  pacman2: "images/Pacman/sprite_pacman2.png",
-  blinky: "images/blinky.png",
-  inky: "images/inky.png",
-  pinky: "images/pinky.png",
-  clyde: "images/clyde.png",
+  pacman0: "images/pacman0.png",
+  pacman1: "images/pacman1.png",
+  pacman2: "images/pacman2.png",
+  pacman3: "images/pacman3.png",
+  pacman4: "images/pacman4.png",
+  pacman5: "images/pacman5.png",
+  mpacman0: "images/mpacman0.png",
+  mpacman1: "images/mpacman1.png",
+  mpacman2: "images/mpacman2.png",
+  mpacman3: "images/mpacman3.png",
+  mpacman4: "images/mpacman4.png",
+  mpacman5: "images/mpacman5.png",
+  mpacman6: "images/mpacman6.png",
+  mpacman7: "images/mpacman7.png",
+  blinky1: "images/blinky1.png",
+  inky1: "images/inky1.png",
+  pinky1: "images/pinky1.png",
+  clyde1: "images/clyde1.png",
+  blinky2: "images/blinky2.png",
+  inky2: "images/inky2.png",
+  pinky2: "images/pinky2.png",
+  clyde2: "images/clyde2.png",
   obstacle_hor: "images/obstacle_hor.png",
   obstacle_ver: "images/obstacle_ver.png",
-  ironhack: "images/ironhack.png"
+  ironhack: "images/ironhack.png",
+  menu: "images/pacman_menu.png"
 }
 
 // classes
@@ -38,20 +55,41 @@ function Board(){
   }
 }
 
+function Menu(){
+  this.x = 0
+  this.y = 0
+  this.width = 860
+  this.height = 211
+  this.image = new Image()
+  this.image.src = images.menu
+  this.image.onload = ()=>this.draw()
+
+  this.draw = function(){
+    ctx.drawImage(this.image, this.x, this.y,this.width,this.height)
+  }
+}
+
 function Pacman(){
+  this.which = true;
   this.x = 200
   this.y = canvas.height/2 - charSize
   this.width = charSize
   this.height = charSize
-  this.image = new Image()
-  this.image.src = images.pacman1
-  this.image.onload = ()=>this.draw()
+  this.img1 = new Image();
+  this.img1.src = images.mpacman1;
+  this.img2 = new Image();
+  this.img2.src = images.mpacman0;
+  // this.image.onload = ()=>this.draw()
 
   this.draw = function(){
+    // Animation
+    var img = this.which ? this.img1 : this.img2;
     this.x+=1
     this.boundaries()
-    ctx.fillStyle = "yellow"
-    ctx.fillRect(this.x,this.y,this.width,this.height)
+    // ctx.fillStyle = "yellow"
+    // ctx.fillRect(this.x,this.y,this.width,this.height)
+    ctx.drawImage(img, this.x, this.y,this.width,this.height)
+    if(frames % 10 === 0) this.toggleWhich();
   }
 
   this.boundaries = function(){
@@ -68,9 +106,13 @@ function Pacman(){
       this.x = canvas.width - this.width - 10
     }
   }
+  this.toggleWhich = function(){
+    this.which = !this.which;
+  }
 }
 
-function Ghost(x,y,img,dir,long,color,speed){
+function Ghost(x,y,img1,img2,dir,long,color,speed){
+  this.which = true;
   this.x = x ? x : 600
   this.y = y ? y : 450
   this.dir = dir ? dir : 1
@@ -81,11 +123,18 @@ function Ghost(x,y,img,dir,long,color,speed){
   this.height = charSize
   this.color = color
   this.speed = speed ? speed : 3
-  this.image = new Image()
-  this.image.src = img ? img : images.pacman0
-  this.image.onload = ()=>this.draw()
+  // this.image = new Image()
+  // this.image.src = img ? img : images.pacman0
+
+  this.img1 = new Image();
+  this.img1.src = img1;
+  this.img2 = new Image();
+  this.img2.src = img2;
+  // this.image.onload = ()=>this.draw()
 
   this.draw = function(){
+    // Animation
+    var img = this.which ? this.img1 : this.img2;
     // ZigZag movement
     if(Math.floor(frames/this.long) % 2 === 0){
       this.changeDir = -1
@@ -102,8 +151,13 @@ function Ghost(x,y,img,dir,long,color,speed){
     }
     this.y -= this.changeDir * this.dir * this.speed
     this.x -= this.goBackwards * this.speed
-    ctx.fillStyle = this.color
-    ctx.fillRect(this.x,this.y,this.width,this.height)
+    // ctx.fillStyle = this.color
+    // ctx.fillRect(this.x,this.y,this.width,this.height)
+    ctx.drawImage(img, this.x, this.y,this.width,this.height)
+    if(frames % 10 === 0) this.toggleWhich();
+  }
+  this.toggleWhich = function(){
+    this.which = !this.which;
   }
 }
 
@@ -142,6 +196,7 @@ function Pellet(x,y,img){
 
 // instances
 var bg = new Board()
+var menu = new Menu()
 var bar1 = new Obstacle(canvas.width,canvas.height,300,charSize) //Horizontal Top
 var bar2 = new Obstacle(canvas.width,canvas.height,250,charSize) //Horizontal Bottom
 var bar3 = new Obstacle(canvas.width,canvas.height,charSize,300) //Vertical
@@ -149,10 +204,10 @@ var pellet1 = new Pellet(canvas.width,canvas.height,images.ironhack)
 var pellet2 = new Pellet(canvas.width,canvas.height,images.ironhack)
 var pellet3 = new Pellet(canvas.width,canvas.height,images.ironhack)
 var pacman = new Pacman()
-var blinky = new Ghost(700,100,images.blinky,1,60,"#d03e19")
-var inky = new Ghost(700,200,images.inky,-1,120,"#46bfee")
-var pinky = new Ghost(700,300,images.pinky,1,60,"#ea82e5")
-var clyde = new Ghost(700,400,images.clyde,-1,120,"#db851c")
+var blinky = new Ghost(700,100,images.blinky1,images.blinky2,1,60,"#d03e19")
+var inky = new Ghost(700,200,images.inky2,images.inky1,-1,120,"#46bfee")
+var pinky = new Ghost(700,300,images.pinky1,images.pinky2,1,60,"#ea82e5")
+var clyde = new Ghost(700,400,images.clyde2,images.clyde1,-1,120,"#db851c")
 
 
 //main functions
@@ -167,16 +222,16 @@ function update(){
   ctx.clearRect(0,0,canvas.width,canvas.height)
   bg.draw()
   pacman.draw()
-  blinky.draw()
-  inky.draw()
-  pinky.draw()
-  clyde.draw()
   bar1.draw()
   bar2.draw()
   bar3.draw()
   if(pellet1.active) pellet1.draw()
   if(pellet2.active) pellet2.draw()
   if(pellet3.active) pellet3.draw()
+  blinky.draw()
+  inky.draw()
+  pinky.draw()
+  clyde.draw()
   checkCollision(bar1,1)
   checkCollision(bar2,1)
   checkCollision(bar3,2)
@@ -192,6 +247,7 @@ function update(){
 
 function gameOver(){
   // score += timeLimit - Math.floor(frames/60)
+  gameStart = false
   clearInterval(interval)
   interval = null
   ctx.fillStyle = "red"
@@ -243,6 +299,7 @@ function checkCollision(item,type){
       item.x = canvas.width
       item.y = canvas.height
       item.draw()
+      pacman.draw()
       item.active = false
       score += item.points
       stickers--
@@ -271,6 +328,8 @@ function levelSettings(level){
   switch(level){
     case 1:
       // start()
+      pacman.img1.src = images.mpacman0
+      pacman.img2.src = images.mpacman1
       bar1.x = 400
       bar1.y = 100
       bar2.x = 100
@@ -305,7 +364,10 @@ function levelSettings(level){
 addEventListener('keyup',function(e){
   switch(e.keyCode){
     case 13:
-      return start()
+      if(!gameStart){
+        gameStart = true
+        return start()
+      }
     default:
       return
   }
@@ -323,20 +385,28 @@ addEventListener('keydown', function(e){
     //   if(!interval) update()
     //   break;
     //ArrowUp
-    case 40:
-      pacman.y += speed
-      break;
-    //ArrowDown
     case 38:
       pacman.y -= speed
+      pacman.img1.src = images.mpacman4
+      pacman.img2.src = images.mpacman5
+      break;
+    //ArrowDown
+    case 40:
+      pacman.y += speed
+      pacman.img1.src = images.mpacman6
+      pacman.img2.src = images.mpacman7
       break;
     //ArrowLeft
     case 37:
       pacman.x -= speed
+      pacman.img1.src = images.mpacman2
+      pacman.img2.src = images.mpacman3
       break;
     //ArrowRight
     case 39:
       pacman.x += speed
+      pacman.img1.src = images.mpacman0
+      pacman.img2.src = images.mpacman1
       // checkCollision()
       break;
   }
