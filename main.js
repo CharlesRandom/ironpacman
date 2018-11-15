@@ -8,6 +8,7 @@ var frames = 0
 var speed = 25
 var charSize = 35
 var player = 1
+var countdown = 5
 var level = 1
 var score = 0
 var gameStart = false
@@ -250,6 +251,8 @@ function gameOver(){
   gameStart = false
   clearInterval(interval)
   interval = null
+  ctx.fillStyle = "rgba(15,15,15,0.7)"
+  ctx.fillRect(0,0,canvas.width,canvas.height)
   ctx.fillStyle = "red"
   ctx.font = "bold 80px Arial"
   ctx.fillText("GAME OVER",50,220)
@@ -257,6 +260,12 @@ function gameOver(){
   ctx.font = "bold 40px Arial"
   ctx.fillText("Score: " + score + " pts   Time: " + Math.floor(frames/60) + " sec",150,360)
   ctx.fillText("Press 'enter' to restart",50,500)
+  if(player === 1){
+    player = 2
+    setTimeout(nextPlayer,5000)
+  } else {
+    player = 1
+  }
 }
 
 function levelComplete(level){
@@ -325,11 +334,17 @@ function checkLevelComplete(){
 }
 
 function levelSettings(level){
+  gameStart = true
   switch(level){
     case 1:
       // start()
-      pacman.img1.src = images.mpacman0
-      pacman.img2.src = images.mpacman1
+      if(player === 1){
+        pacman.img1.src = images.pacman0
+        pacman.img2.src = images.pacman1
+      } else {
+        pacman.img1.src = images.mpacman0
+        pacman.img2.src = images.mpacman1
+      }
       bar1.x = 400
       bar1.y = 100
       bar2.x = 100
@@ -355,9 +370,32 @@ function levelSettings(level){
       pacman.y = canvas.height/2 - charSize
       break;
     default:
-      start()
+      nextPlayer()
       break;
   }
+}
+
+function nextPlayer(){
+  clearInterval(interval)
+  interval = null
+
+  interval = setInterval(function(){
+    ctx.fillStyle = "black"
+    ctx.fillRect(0,0,canvas.width,canvas.height)
+    ctx.fillStyle = "yellow"
+    ctx.font = "bold 80px Arial"
+    ctx.fillText("Player " + player + " Ready in",50,220)
+    ctx.font = "bold 140px Arial"
+    ctx.fillText(countdown + "!",350,450)
+    countdown--
+    if(countdown === 0){
+      clearInterval(interval)
+      interval = null
+      countdown = 5
+      setTimeout(start,1000)
+    }
+  },1000)
+  // setTimeout(start,5000)
 }
 
 //listeners
@@ -366,7 +404,7 @@ addEventListener('keyup',function(e){
     case 13:
       if(!gameStart){
         gameStart = true
-        return start()
+        return nextPlayer()
       }
     default:
       return
@@ -387,27 +425,46 @@ addEventListener('keydown', function(e){
     //ArrowUp
     case 38:
       pacman.y -= speed
-      pacman.img1.src = images.mpacman4
-      pacman.img2.src = images.mpacman5
+      if (player === 1){
+        pacman.img1.src = images.pacman4
+        pacman.img2.src = images.pacman0
+      } else {
+        pacman.img1.src = images.mpacman4
+        pacman.img2.src = images.mpacman5
+      }
       break;
     //ArrowDown
     case 40:
       pacman.y += speed
-      pacman.img1.src = images.mpacman6
-      pacman.img2.src = images.mpacman7
+      if (player === 1){
+        pacman.img1.src = images.pacman5
+        pacman.img2.src = images.pacman0
+      } else {
+        pacman.img1.src = images.mpacman6
+        pacman.img2.src = images.mpacman7
+      }
       break;
     //ArrowLeft
     case 37:
       pacman.x -= speed
-      pacman.img1.src = images.mpacman2
-      pacman.img2.src = images.mpacman3
+      if (player === 1){
+        pacman.img1.src = images.pacman3
+        pacman.img2.src = images.pacman0
+      } else {
+        pacman.img1.src = images.mpacman2
+        pacman.img2.src = images.mpacman3
+      }
       break;
     //ArrowRight
     case 39:
       pacman.x += speed
-      pacman.img1.src = images.mpacman0
-      pacman.img2.src = images.mpacman1
-      // checkCollision()
+      if (player === 1){
+        pacman.img1.src = images.pacman1
+        pacman.img2.src = images.pacman0
+      } else {
+        pacman.img1.src = images.mpacman0
+        pacman.img2.src = images.mpacman1
+      }
       break;
   }
 })
