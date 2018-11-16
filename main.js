@@ -301,14 +301,27 @@ function gameOver(){
   ctx.fillStyle = "white"
   ctx.font = "bold 40px Arial"
   ctx.fillText("Final Score: " + score + " pts   Time: " + Math.floor(frames/60) + " sec",120,360)
+  // if(player === 1){
+  //   bgSound.pause()
+  //   bgSound = new Audio()
+  //   bgSound.src = audio.gameOver
+  //   bgSound.play()
+  //   ctx.fillText("Next player get ready",50,500)
+  //   player = 2
+  //   setTimeout(nextPlayer,3000)
+  // } else {
+  //   player = 1
+  //   ctx.fillText("Press 'enter' to restart",50,500)
+  //   playCredits()
+  // }
   if(player === 1){
     bgSound.pause()
     bgSound = new Audio()
     bgSound.src = audio.gameOver
     bgSound.play()
-    ctx.fillText("Next player get ready",50,500)
-    player = 2
-    setTimeout(nextPlayer,3000)
+    ctx.fillText("Press 'space bar' for player 2",50,500)
+    ctx.fillText("or 'enter' to restart",100,540)
+    // player = 2
   } else {
     player = 1
     ctx.fillText("Press 'enter' to restart",50,500)
@@ -339,6 +352,9 @@ function levelComplete(){
     bgSound = new Audio()
     bgSound.src = audio.start
     bgSound.play()
+    player = 1
+    gameStart = false
+    ctx.fillText("Press 'enter' to restart",50,500)
   }
 }
 
@@ -492,8 +508,13 @@ addEventListener('keydown', function(e){
   switch(e.keyCode){
     //Space bar -> stop
     case 32:
-      clearInterval(interval)
-      interval = null
+      // clearInterval(interval)
+      // interval = null
+      if(!gameStart){
+        gameStart = true
+        player = 2
+        setTimeout(nextPlayer,300)
+      }
       break;
     //Enter -> start
     // case 13:
