@@ -8,6 +8,7 @@ var header = document.getElementById("h1")
 // variables
 var interval = null
 var frames = 0
+var seconds = 2
 var speed = 25
 var charSize = 35
 var player = 1
@@ -48,8 +49,9 @@ var images = {
 
 var audio = {
   start:"audio/PacManOriginalTheme.mp3",
-  play: "http://66.90.93.122/ost/mario-kart-64/qljrieoz/13%20Rainbow%20Road.mp3",
-  gameOver: "http://66.90.93.122/ost/super-mario-kart-gamerip/khkvobtw/Game%20Over.mp3"
+  play: "audio/PacManWakaWaka.mp3",
+  gameOver: "audio/PacManGameOver.mp3",
+  madworld: "audio/MadWorld.mp3"
 }
 
 // classes
@@ -222,7 +224,7 @@ function Pellet(x,y,img){
 
 // instances
 var bg = new Board()
-var bgSound
+var bgSound = new Audio()
 var menu = new Menu()
 var bar1 = new Obstacle(canvas.width,canvas.height,300,charSize) //Horizontal Top
 var bar2 = new Obstacle(canvas.width,canvas.height,250,charSize) //Horizontal Bottom
@@ -241,15 +243,20 @@ var clyde = new Ghost(700,400,images.clyde2,images.clyde1,-1,120,"#db851c")
 function start(){
   h1.innerHTML = "Player " + player
   levelSettings(level)
-  bgSound = new Audio()
-  bgSound.src = audio.start
-  bgSound.play()
   if(!interval) interval = setInterval(update,1000/60)
   // interval = setInterval(update,1000/60)
 }
 
 function update(){
   frames++
+  if(Math.floor(frames/60) > seconds-1 && seconds > 0) {
+    bgSound.pause()
+    bgSound = new Audio()
+    bgSound.src = audio.play
+    bgSound.play()
+    bgSound.loop = true
+    seconds = 0
+  }
   ctx.clearRect(0,0,canvas.width,canvas.height)
   bg.draw()
   bg.drawScore()
@@ -275,7 +282,7 @@ function update(){
   checkCollision(pinky,4)
   checkCollision(clyde,4)
   if(checkLevelComplete()) {
-    score += timeLimit - Math.floor(frames/60)
+    // score += timeLimit - Math.floor(frames/60)
     setTimeout(levelComplete,200)
   }
 }
@@ -295,25 +302,44 @@ function gameOver(){
   ctx.font = "bold 40px Arial"
   ctx.fillText("Final Score: " + score + " pts   Time: " + Math.floor(frames/60) + " sec",120,360)
   if(player === 1){
+    bgSound.pause()
+    bgSound = new Audio()
+    bgSound.src = audio.gameOver
+    bgSound.play()
     ctx.fillText("Next player get ready",50,500)
     player = 2
     setTimeout(nextPlayer,3000)
   } else {
     player = 1
     ctx.fillText("Press 'enter' to restart",50,500)
+    playCredits()
   }
 }
 
 function levelComplete(){
   clearInterval(interval)
   interval = null
+  bgSound.pause()
   ctx.fillStyle = "yellow"
   ctx.font = "bold 80px Arial"
   ctx.fillText("Level " + level + " Completed!",50,220)
   ctx.fillStyle = "white"
   ctx.font = "bold 40px Arial"
   ctx.fillText("Final Score: " + score + " pts   Time: " + Math.floor(frames/60) + " sec",120,360)
-  // ctx.fillText("Press 'enter' to restart",50,350)
+  bgSound = new Audio()
+  if(player === 1){
+    // bgSound = new Audio()
+    // bgSound.src = audio.gameOver
+    // bgSound.play()
+    // ctx.fillText("Next player get ready",50,500)
+    player = 2
+    setTimeout(nextPlayer,3000)
+  } else {
+    bgSound.pause()
+    bgSound = new Audio()
+    bgSound.src = audio.start
+    bgSound.play()
+  }
 }
 
 // aux functions
@@ -394,10 +420,15 @@ function levelSettings(level){
       pellet3.active = true
       stickers = 3
       score = 0
+      frames = 0
       blinky.x = 700
+      blinky.y = 100
       inky.x = 600
+      inky.y = 200
       pinky.x = 700
+      pinky.y = 300
       clyde.x = 600
+      clyde.y = 400
       pacman.x = 200
       pacman.y = canvas.height/2 - charSize
       break;
@@ -411,6 +442,13 @@ function nextPlayer(){
   h1.innerHTML = "Player " + player
   clearInterval(interval)
   interval = null
+  bgSound.pause()
+  bgSound = new Audio()
+  bgSound.src = audio.start
+  bgSound.play()
+  seconds = 2
+  score = 0
+  frames = 0
   interval = setInterval(function(){
     ctx.fillStyle = "black"
     ctx.fillRect(0,0,canvas.width,canvas.height)
@@ -428,6 +466,13 @@ function nextPlayer(){
     }
   },1000)
   // setTimeout(start,5000)
+}
+
+function playCredits(){
+  bgSound.pause()
+  bgSound = new Audio()
+  bgSound.src = audio.madworld
+  bgSound.play()
 }
 
 //listeners
